@@ -11,3 +11,21 @@ resource "aws_internet_gateway" "igw" {
     Name = "main-igw"
   }
 }
+
+### Elastic IP and NAT Gateway
+# NAT Gateway allows private subnet instances to reach the internet (e.g. for package installs)
+# without being directly reachable from the internet.
+
+resource "aws_eip" "nat_1" {
+  domain = "vpc"
+  tags = {
+    Name = "eip for Nat Gateway1"
+  }
+}
+
+resource "aws_eip" "nat_2" {
+  domain = "vpc"
+  tags = {
+    Name = "eip for Nat Gateway2"
+  }
+}
