@@ -15,9 +15,7 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-### Elastic IP and NAT Gateway
-# NAT Gateway allows private subnet instances to reach the internet (e.g. for package installs)
-# without being directly reachable from the internet.
+### Elastic IPs for NAT Gateways
 
 resource "aws_eip" "nat_1" {
   domain = "vpc"
@@ -61,5 +59,21 @@ resource "aws_subnet" "private" {
   tags = {
     Name = "private-subnet-${count.index}-${var.project_name}"
   }
+}
+
+# NAT Gateway allows private subnet instances to reach the internet (e.g. for package installs)
+# without being directly reachable from the internet.
+resource "aws_nat_gateway" "nat_1" {
+  allocation_id = aws_eip.nat_1.id
+  subnet_id     = aws_subnet.public[0].id  # NAT Gateways must live in a PUBLIC subnet
+
+  depends_on = [aws_internet_gateway.igw]
+}
+
+resource "aws_nat_gateway" "nat_2" {
+  allocation_id = aws_eip.nat_2.id
+  subnet_id     = aws_subnet.public[1].id
+
+  depends_on = [aws_internet_gateway.igw]
 }
 
