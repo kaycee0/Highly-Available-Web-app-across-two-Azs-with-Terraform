@@ -68,6 +68,9 @@ resource "aws_nat_gateway" "nat_1" {
   subnet_id     = aws_subnet.public[0].id  # NAT Gateways must live in a PUBLIC subnet
 
   depends_on = [aws_internet_gateway.igw]
+  tags = {
+    Name = "${var.project_name}-nat-gateway-1"
+  }
 }
 
 resource "aws_nat_gateway" "nat_2" {
@@ -75,5 +78,8 @@ resource "aws_nat_gateway" "nat_2" {
   subnet_id     = aws_subnet.public[1].id
 
   depends_on = [aws_internet_gateway.igw]
+  tags = {
+    Name = "${var.project_name}-nat-gateway-2"
+  }
 }
 
