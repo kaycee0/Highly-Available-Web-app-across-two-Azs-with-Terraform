@@ -2,13 +2,16 @@
 
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
+    tags = {
+        Name = "${var.project_name}-vpc"
+    }
 }
 ### Internet Gateway
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "main-igw"
+    Name = "${var.project_name}-igw"
   }
 }
 
@@ -19,13 +22,44 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_eip" "nat_1" {
   domain = "vpc"
   tags = {
-    Name = "eip for Nat Gateway1"
+    Name = "${var.project_name}-eip-nat-1"
   }
 }
 
 resource "aws_eip" "nat_2" {
   domain = "vpc"
   tags = {
-    Name = "eip for Nat Gateway2"
+    Name = "${var.project_name}-eip-nat-2"
   }
 }
+
+### Subnets
+
+# Public subnets — host the ALB and NAT Gateways
+resource "aws_subnet" "public" {
+ count = length(var.azs)
+
+  vpc_id            = aws_vpc.main.id
+  availability_zone = var.azs[count.index]
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index)
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public-subnet-${count.index}-${var.project_name}"
+  }
+}
+
+# Private subnets — host the EC2 instances (no direct internet exposure)
+resource "aws_subnet" "private" {
+  count = length(var.azs)
+
+  vpc_id            = aws_vpc.main.id
+  availability_zone = var.azs[count.index]
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + length(var.azs))
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name = "private-subnet-${count.index}-${var.project_name}"
+  }
+}
+
