@@ -83,3 +83,42 @@ resource "aws_nat_gateway" "nat_2" {
   }
 }
 
+### Route Tables
+
+# Public route table — directs internet-bound traffic to the IGW
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+  tags = {
+    Name = "${var.project_name}-public-rt"
+  }
+}
+
+# Private route tables — direct internet-bound traffic to the NAT Gateway
+resource "aws_route_table" "private_1" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_1.id
+  }
+  tags = {
+    Name = "${var.project_name}-private-rt-1"
+  }
+}
+
+resource "aws_route_table" "private_2" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_2.id
+  }
+  tags = {
+    Name = "${var.project_name}-private-rt-2"
+  }
+}
