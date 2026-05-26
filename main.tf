@@ -156,3 +156,33 @@ data "aws_ami" "amazon_linux" {
     values = ["al2023-ami-*-x86_64"]
   }
 }
+
+### IAM Role, Policy Attachment, and Instance Profile
+
+resource "aws_iam_role" "app" {
+  name = "RedBullRacing-Ec2-Role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm" {
+  role       = aws_iam_role.app.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "app" {
+  name = "RedBullRacing-Ec2-instance-profile"
+  role = aws_iam_role.app.name
+}
