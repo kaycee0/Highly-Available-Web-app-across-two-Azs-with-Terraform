@@ -186,3 +186,47 @@ resource "aws_iam_instance_profile" "app" {
   name = "RedBullRacing-Ec2-instance-profile"
   role = aws_iam_role.app.name
 }
+
+### Security Groups
+
+# ALB security group — accepts HTTP from the internet
+resource "aws_security_group" "alb" {
+  name        = "${var.project_name}-alb-sg"
+  description = "Allow HTTP inbound from internet"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# App security group — only accepts traffic from the ALB, not the open internet
+resource "aws_security_group" "app" {
+  name        = "${var.project_name}-app-sg"
+  description = "Allow traffic only from ALB"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    protocol        = "tcp"
+    from_port       = 8080
+    to_port         = 8080
+    security_groups = [aws_security_group.alb.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
