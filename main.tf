@@ -144,3 +144,15 @@ resource "aws_route_table_association" "private_2" {
   subnet_id      = aws_subnet.private[1].id
   route_table_id = aws_route_table.private_2.id
 }
+
+### EC2 AMI Image
+
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+}
