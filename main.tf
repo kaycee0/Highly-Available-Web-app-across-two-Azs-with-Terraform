@@ -230,3 +230,20 @@ resource "aws_security_group" "app" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+### EC2 Launch Template
+
+resource "aws_launch_template" "app" {
+  name          = "RedBullRacing-launch-template"
+  image_id      = data.aws_ami.amazon_linux.id
+  instance_type = "t2.micro"
+
+  network_interfaces {
+    associate_public_ip_address = false # Private subnet — no public IP needed
+    security_groups             = [aws_security_group.app.id]
+  }
+
+  iam_instance_profile {
+    name = aws_iam_instance_profile.app.name
+  }
+}
