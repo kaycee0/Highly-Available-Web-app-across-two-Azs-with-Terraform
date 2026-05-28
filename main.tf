@@ -281,3 +281,34 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.main.arn
   }
 }
+
+### Auto Scaling Group and Policy
+
+resource "aws_autoscaling_group" "app" {
+  name                      = "${var.project_name}-asg"
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 300
+  health_check_type         = "ELB"
+  desired_capacity          = 4
+  force_delete              = true
+  vpc_zone_identifier       = [aws_subnet.private[0].id, aws_subnet.private[1].id]  # EC2s in private subnets
+
+  launch_template {
+    id      = aws_launch_template.app.id
+    version = "$Latest"
+  }
+}
+
+resource "aws_autoscaling_policy" "cpu" {
+  name                   = "${var.project_name}-cpu-policy"
+  autoscaling_group_name = aws_autoscaling_group.app.name
+  policy_type            = "TargetTrackingScaling"
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 60.0
+  }
+}
